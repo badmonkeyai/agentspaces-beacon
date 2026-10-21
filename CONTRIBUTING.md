@@ -39,9 +39,16 @@ the coordination fabric itself lives in the
 
 ## Building and testing
 
+Build the module and run its tests:
+
 ```bash
-mvn -B -ntp verify                                                  # the module and its tests
-mvn -B -ntp -Pcentral-publish -DskipTests -Dgpg.skip=true package   # the release dry run, as CI runs it
+mvn -B -ntp verify
+```
+
+Run the release dry run, as CI runs it:
+
+```bash
+mvn -B -ntp -Pcentral-publish -DskipTests -Dgpg.skip=true package
 ```
 
 Java 21 and Maven. The tests start a real peer on loopback and read its
