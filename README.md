@@ -87,24 +87,6 @@ need no network beyond the machine. The AgentSpaces 0.4.0 artifacts, including
 `agentspaces-bootstrap`, resolve from Maven Central, or from the local
 repository after `mvn install` in those projects.
 
-## Releasing
-
-The `central-publish` profile attaches the sources and javadoc jars, signs
-every artifact with GPG (the passphrase from `MAVEN_GPG_PASSPHRASE`, or a GPG
-agent), and uploads through the Sonatype Central Portal using the `central`
-server id in `settings.xml`:
-
-```sh
-mvn -Pcentral-publish -DskipTests -Dgpg.skip=true clean package   # dry run
-mvn -Pcentral-publish clean deploy                                # release
-```
-
-`autoPublish` is off, so the upload waits on the Portal as a validated bundle
-until you publish it there. The bundle holds `agentspaces-beacon` and its
-parent POM, `agentspaces-beacon-parent`. Publish `agentspaces-bootstrap` 0.4.0
-first, since the beacon depends on it. CI runs the same profile unsigned
-(`-Dgpg.skip=true`) on every push, so a javadoc or packaging problem fails a
-pull request before it can fail a release.
 
 ## Contributing and security
 
