@@ -26,8 +26,8 @@ import java.util.Objects;
 
 /**
  * A hook on the document a beacon serves, applied per group before signing
- * (SRAD DB-C-08): add a parameter, replace the seed list, set the delegation
- * a social beacon publishes. The host collects these as beans.
+ * (SRAD DB-C-08): add a parameter, replace the seed list, or change the
+ * entry's other fields. The host collects these as beans.
  */
 @FunctionalInterface
 public interface BeaconDocumentCustomizer {

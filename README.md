@@ -1,6 +1,6 @@
 # AgentSpaces Beacon
 
-A **beacon** is an AgentSpaces peer that stays up at a known address so that newcomers have somewhere to go. This project runs one. It joins your group like any other peer and publishes a signed document that lists the group and its current seeds. Agents written in Java, Python, or TypeScript can then find the group from a URL or from DNS, with no seed list in their configuration.
+A **beacon** is an AgentSpaces peer that stays up at a known address so that newcomers have somewhere to go. This project runs one. It joins your group like any other peer and publishes a signed document that lists the group and its current seeds. Agents on a Spring Boot or Micronaut host can then find the group from DNS or from a URL, and Python and TypeScript agents can read the document at its URL, with no seed list in their configuration.
 
 You can run the beacon as a standalone program, or embed its classes in your own application to build a beacon of your own. If peer, group, seed, locator, and chain are new words, read [The ideas, one at a time](https://github.com/badmonkeyai/agentspaces-bootstrap#the-ideas-one-at-a-time) in the `agentspaces-bootstrap` README first. This README uses the same running example: Acme Corp's `research-fleet`.
 
@@ -106,10 +106,10 @@ If your seed set changes often, register only the pointer record at `agentspaces
 
 An AgentSpaces agent is a peer, and every peer needs a first address to dial. A beacon moves that address out of every agent's configuration and into one place that an operator maintains.
 
-- **Agents carry a group name and a place to look.** A new agent needs `founding: research-fleet-v1` (or a group id) and one `bootstrap` setting. You deploy a hundred agents with the same small configuration, on servers, in pods, and on laptops, and none of them holds a seed list that can go stale.
+- **Agents carry a group name and a place to look.** A new agent needs `founding: research-fleet-v1` (or, for a group with a signed founding, its group id) and one `bootstrap` setting. You deploy a hundred agents with the same small configuration, on servers, in pods, and on laptops, and none of them holds a seed list that can go stale.
 - **The seed list follows the fleet.** Kubernetes reschedules a pod and its address changes. The beacon's next document lists the new address, and newcomers receive it.
-- **Every language reads the same document.** The `url` and `document` locators in `agentspaces-bootstrap` read it for Spring Boot and Micronaut hosts, and the Python and TypeScript clients bootstrap from the same documents and verify the signature.
-- **Other organizations join with an id and a URL.** For a group with a signed founding, a partner's agent needs only the group id and the document's URL. It checks the founding against the id, and pins the beacon's PeerId with `beacon-peer` when it wants to refuse a replaced document.
+- **Every language reads the same document.** The `url` and `document` locators in `agentspaces-bootstrap` read it for Spring Boot and Micronaut hosts. The Python and TypeScript clients fetch it, verify its signature, and take its seeds. Their one-call `bootstrap(url)` joins a group whose entry carries a signed founding, and the entry of a group started from a text carries none.
+- **Other organizations join with an id and a URL.** For a group with a signed founding, a Python or TypeScript agent needs only the group id and the document's URL. A Spring Boot or Micronaut agent also lists one seed, the beacon's address, because those hosts start a `join:` group only when it has a configured seed or a `BeaconLocator` bean. Each agent checks the founding against the id, and pins the beacon's PeerId with `beacon-peer` when it wants to refuse a replaced document.
 - **A lost beacon slows newcomers and nothing else.** A member that has joined learns the rest of the group by gossip and does not need the beacon. Run a second beacon for availability: it joins the same group, and each beacon's document lists the other as a seed because the other is a member with the rendezvous role.
 
 ## Building your own beacon
@@ -125,7 +125,7 @@ System.out.print(RecordPrinter.zone(source.get(), "corp.example",
 ```
 
 - `BeaconDocumentSource.of` builds a signed document from the node's groups, with a 5-minute TTL, a rebuild at most every 30 seconds, and 8 seeds per group. The full constructor sets each of those, and takes the multicast group to advertise and a list of customizers.
-- `BeaconServer` serves the document on the JDK HTTP server. Its second argument is the per-source request rate, and the third is an optional file that the beacon replaces atomically whenever the document changes, so an ingress or a CDN can serve the file instead.
+- `BeaconServer` serves the document on the JDK HTTP server. Its second argument is the per-source request rate, and the third is an optional file that the beacon replaces atomically each time a request, or startup, builds a changed document. Nothing refreshes the file on a timer, so an ingress or a CDN that serves only the file sees a new document after the next request to the beacon's port.
 - `RecordPrinter.zone` renders the DNS records for a document, for your DNS team or for your own DNS automation.
 
 A `BeaconDocumentCustomizer` adjusts each group's entry before the beacon signs it. This one adds a `region` parameter that readers receive in the hint:
@@ -155,7 +155,7 @@ To serve the document through a web layer you already run, such as Spring MVC or
 | `--membership open\|invite` | `open` | the group's membership policy |
 | `--domain <zone>` | none | the DNS zone to print records for |
 | `--url <url>` | the local server's URL | the document's public URL, printed in the records |
-| `--write-to <file>` | none | keeps a copy of the document in this file |
+| `--write-to <file>` | none | keeps a copy of the document in this file, rewritten when a request or startup builds a changed document |
 | `--ttl <seconds>` | 300 | the document's time to live |
 | `--refresh <seconds>` | 30 | the most often the document is rebuilt |
 | `--max-seeds <n>` | 8 | the seed limit per group |
@@ -190,30 +190,6 @@ need no network beyond the machine. The AgentSpaces 0.4.0 artifacts, including
 `agentspaces-bootstrap`, resolve from Maven Central, or from the local
 repository after `mvn install` in those projects.
 
-## Releasing
-
-The `central-publish` profile attaches the sources and javadoc jars, signs
-every artifact with GPG (the passphrase from `MAVEN_GPG_PASSPHRASE`, or a GPG
-agent), and uploads through the Sonatype Central Portal using the `central`
-server id in `settings.xml`. The dry run builds the jars without signing or
-uploading anything:
-
-```sh
-mvn -Pcentral-publish -DskipTests -Dgpg.skip=true clean package
-```
-
-The release signs the artifacts and uploads them:
-
-```sh
-mvn -Pcentral-publish clean deploy
-```
-
-`autoPublish` is off, so the upload waits on the Portal as a validated bundle
-until you publish it there. The bundle holds `agentspaces-beacon` and its
-parent POM, `agentspaces-beacon-parent`. Publish `agentspaces-bootstrap` 0.4.0
-first, since the beacon depends on it. CI runs the same profile unsigned
-(`-Dgpg.skip=true`) on every push, so a javadoc or packaging problem fails a
-pull request before it can fail a release.
 
 ## Contributing and security
 
