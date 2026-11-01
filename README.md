@@ -23,7 +23,7 @@ Acme runs `research-fleet`, a group of agents on servers, in Kubernetes, and on 
 ```sh
 mvn -q clean package
 mvn -q -pl beacon dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/lib
-java -cp 'beacon/target/agentspaces-beacon-0.4.0.jar:beacon/target/lib/*' \
+java -cp 'beacon/target/agentspaces-beacon-0.5.0.jar:beacon/target/lib/*' \
      ai.badmonkey.agentspaces.beacon.BeaconMain --keystore ./beacon-keys --founding research-fleet-v1 \
      --name research-fleet --bind 0.0.0.0:7500 --advertise beacon.corp.example:7500 \
      --http 0.0.0.0:7580 --roles rendezvous --domain corp.example \
@@ -164,7 +164,7 @@ To serve the document through a web layer you already run, such as Spring MVC or
 
 ## Coordinates
 
-`ai.badmonkey.agentspaces:agentspaces-beacon:0.4.0`, depending on
+`ai.badmonkey.agentspaces:agentspaces-beacon:0.5.0`, depending on
 `agentspaces-bootstrap` (the document model), `agentspaces-peering`, and the
 core starter's framework-free wiring for the standalone main.
 
@@ -186,7 +186,7 @@ mvn -B -ntp verify
 ```
 
 The tests start a real peer on loopback and serve its document over HTTP; they
-need no network beyond the machine. The AgentSpaces 0.4.0 artifacts, including
+need no network beyond the machine. The AgentSpaces 0.5.0 artifacts, including
 `agentspaces-bootstrap`, resolve from Maven Central, or from the local
 repository after `mvn install` in those projects.
 

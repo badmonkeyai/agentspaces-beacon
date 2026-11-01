@@ -36,7 +36,7 @@ jobs:
           java-version: '21'
           cache: maven
       - name: Build, test, and attach sources and javadoc
-        # The AgentSpaces 0.4.0 artifacts, agentspaces-bootstrap included, resolve
+        # The AgentSpaces 0.5.0 artifacts, agentspaces-bootstrap included, resolve
         # from Maven Central, so this job fails until they are published there.
         # The publication profile runs unsigned here, so a javadoc or packaging
         # problem fails the pull request rather than the release.
