@@ -118,7 +118,7 @@ public final class BeaconDocumentSource implements Supplier<BeaconDocument> {
         for (GroupRuntime runtime : node.groups()) {
             BeaconDocumentCustomizer.GroupDraft draft = new BeaconDocumentCustomizer.GroupDraft(
                     runtime.advertisement().name() == null ? runtime.id().value() : runtime.advertisement().name(),
-                    "aspace://" + runtime.id().value());
+                    ai.badmonkey.agentspaces.common.id.GroupId.URI_PREFIX + runtime.id().value());
             runtime.founding().ifPresent(founding ->
                     draft.founding(Base64.getEncoder().encodeToString(codec.toBytes(founding))));
             for (PeerAdvertisement.Endpoint endpoint : seeds(runtime)) {
